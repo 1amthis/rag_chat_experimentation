@@ -19,6 +19,7 @@ class RAGChat {
         this.sendBtn = document.getElementById('send-btn');
         this.sendText = document.getElementById('send-text');
         this.sendSpinner = document.getElementById('send-spinner');
+        this.newConversationBtn = document.getElementById('new-conversation-btn');
         this.modeIndicator = document.getElementById('mode-indicator');
         this.tokenCount = document.getElementById('token-count');
         this.documentCount = document.getElementById('document-count');
@@ -56,6 +57,9 @@ class RAGChat {
         
         // Clear documents
         this.clearDocsBtn.addEventListener('click', () => this.clearDocuments());
+        
+        // New conversation
+        this.newConversationBtn.addEventListener('click', () => this.newConversation());
         
         // Modal keyboard events
         document.addEventListener('keydown', (e) => {
@@ -822,6 +826,23 @@ class RAGChat {
         setTimeout(() => {
             this.documentPreviewModal.style.display = 'none';
         }, 300);
+    }
+    
+    newConversation() {
+        if (!confirm('Start a new conversation? This will clear the current chat history.')) return;
+        
+        this.conversationHistory = [];
+        
+        this.chatMessages.innerHTML = `
+            <div class="message system-message">
+                <div class="message-content">
+                    <p>Welcome to the RAG Experimentation System!</p>
+                    <p>Upload documents and start chatting. The system will automatically switch between full context mode (&lt;10k tokens) and RAG mode (≥10k tokens).</p>
+                </div>
+            </div>
+        `;
+        
+        this.showMessage('New conversation started', 'system');
     }
 }
 

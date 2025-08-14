@@ -490,6 +490,12 @@ header h1 {
     border-top: 1px solid #e5e7eb;
 }
 
+.chat-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
 .input-container {
     display: flex;
     gap: 12px;

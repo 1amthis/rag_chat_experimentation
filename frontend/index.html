@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Experimentation System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RAG Experimentation System</h1>
+            <div class="status-bar">
+                <div id="status-info">
+                    <span id="mode-indicator">Mode: Loading...</span>
+                    <span id="token-count">Tokens: 0</span>
+                    <span id="document-count">Documents: 0</span>
+                </div>
+                <div class="context-progress">
+                    <div class="progress-info">
+                        <span id="progress-text">Context: 0 / 0 tokens (0%)</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="upload-section">
+                    <h3>Upload Documents</h3>
+                    <div class="upload-area" id="upload-area">
+                        <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" multiple hidden>
+                        <div class="upload-placeholder">
+                            <span>📄</span>
+                            <p>Drop files here or click to browse</p>
+                            <small>Supports PDF, DOCX, TXT</small>
+                        </div>
+                    </div>
+                    <button id="upload-btn" class="btn btn-primary">Choose Files</button>
+                </div>
+
+                <div class="documents-section">
+                    <h3>Uploaded Documents</h3>
+                    <div id="documents-list" class="documents-list">
+                        <p class="empty-state">No documents uploaded yet</p>
+                    </div>
+                    <button id="clear-docs-btn" class="btn btn-danger">Clear All</button>
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message system-message">
+                            <div class="message-content">
+                                <p>Welcome to the RAG Experimentation System!</p>
+                                <p>Upload documents and start chatting. The system will automatically switch between full context mode (&lt;10k tokens) and RAG mode (≥10k tokens).</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <textarea id="message-input" placeholder="Ask a question about your documents..." rows="3"></textarea>
+                            <button id="send-btn" class="btn btn-primary">
+                                <span id="send-text">Send</span>
+                                <span id="send-spinner" class="spinner" style="display: none;">●●●</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div id="document-preview-modal" class="modal-overlay">
+        <div class="modal-content document-preview-content">
+            <div class="modal-header">
+                <h3 id="document-preview-title">Document Preview</h3>
+                <button class="modal-close" onclick="window.ragChat.closeDocumentPreview()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="document-preview-meta">
+                    <div class="preview-stat">
+                        <span class="stat-label">Size:</span>
+                        <span id="preview-token-count">Loading...</span>
+                    </div>
+                    <div class="preview-stat">
+                        <span class="stat-label">Uploaded:</span>
+                        <span id="preview-upload-time">Loading...</span>
+                    </div>
+                    <div class="preview-stat">
+                        <span class="stat-label">Length:</span>
+                        <span id="preview-content-length">Loading...</span>
+                    </div>
+                </div>
+                <div class="document-preview-content-wrapper">
+                    <div id="document-preview-content" class="document-preview-text">
+                        Loading document preview...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="window.ragChat.closeDocumentPreview()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode Switch Modal -->
+    <div id="mode-switch-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>System Switched to RAG Mode</h3>
+                <button class="modal-close" onclick="window.ragChat.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon">🔄</div>
+                <p><strong>Your document collection has grown beyond 10,000 tokens!</strong></p>
+                <p>The system has automatically switched from <em>Full Context</em> mode to <em>RAG (Retrieval-Augmented Generation)</em> mode.</p>
+                
+                <div class="mode-comparison">
+                    <div class="mode-info">
+                        <h4>What changed:</h4>
+                        <ul>
+                            <li>Questions now use <strong>semantic search</strong> to find relevant document chunks</li>
+                            <li>Responses are based on the <strong>most relevant excerpts</strong> from your documents</li>
+                            <li>You can inspect retrieved chunks using the <strong>"Retrieved Chunks"</strong> panel in chat responses</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="token-info">
+                    <span id="modal-token-count">Current tokens: Loading...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="window.ragChat.closeModal()">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

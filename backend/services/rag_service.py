@@ -30,6 +30,59 @@ class RAGService:
     def should_use_rag(self) -> bool:
         return self.document_service.get_total_tokens() >= self.token_threshold
     
+    async def enhance_query(self, current_message: str, conversation_history: List[dict] = None) -> str:
+        """
+        Enhance the current query by incorporating context from conversation history.
+        Uses LLM to rewrite the query to be more standalone and contextually rich.
+        """
+        if not conversation_history or len(conversation_history) == 0:
+            return current_message
+        
+        # Get last few turns for context (limit to avoid token overflow)
+        recent_history = conversation_history[-6:]  # Last 3 exchanges (user + assistant pairs)
+        
+        # Build conversation context
+        context_parts = []
+        for msg in recent_history:
+            role = msg.get('role', '')
+            content = msg.get('content', '')
+            if role and content:
+                context_parts.append(f"{role}: {content}")
+        
+        conversation_context = "\n".join(context_parts)
+        
+        enhancement_prompt = f"""Given the conversation history below, rewrite the current user question to make it standalone and include necessary context for document retrieval.
+
+Conversation History:
+{conversation_context}
+
+Current Question: {current_message}
+
+Instructions:
+- Rewrite the question to be self-contained
+- Include relevant context from the conversation history
+- Expand abbreviations or pronouns with their referents
+- Keep the enhanced query concise but complete
+- Focus on what information needs to be retrieved from documents
+
+Enhanced Query:"""
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",  # Use faster model for query enhancement
+                messages=[{"role": "user", "content": enhancement_prompt}],
+                temperature=0.3,  # Lower temperature for more consistent rewrites
+                max_tokens=200
+            )
+            
+            enhanced_query = response.choices[0].message.content.strip()
+            return enhanced_query if enhanced_query else current_message
+            
+        except Exception as e:
+            # Fallback to original message if enhancement fails
+            print(f"Query enhancement failed: {e}")
+            return current_message
+
     async def get_relevant_context(self, query: str, max_chunks: int = 10) -> Tuple[str, List[dict]]:
         if not self.should_use_rag():
             full_content = self.document_service.get_all_content()
@@ -91,7 +144,9 @@ class RAGService:
         if mode == "rag" and self.vector_store.index.ntotal == 0:
             await self.initialize_rag_system()
         
-        context, relevant_chunks = await self.get_relevant_context(message)
+        # Enhance query with conversation context for better retrieval
+        enhanced_query = await self.enhance_query(message, conversation_history)
+        context, relevant_chunks = await self.get_relevant_context(enhanced_query)
         
         system_prompt = f"""You are a helpful assistant that answers questions based on the provided documents. 
         
@@ -132,7 +187,8 @@ class RAGService:
                 "relevant_chunks_count": len(relevant_chunks) if mode == "rag" else 0,
                 "relevant_chunks": relevant_chunks if mode == "rag" else [],
                 "context_tokens_used": context_token_count,
-                "context_metrics": self.get_context_metrics()
+                "context_metrics": self.get_context_metrics(),
+                "enhanced_query": enhanced_query if mode == "rag" else None
             }
             
         except Exception as e:

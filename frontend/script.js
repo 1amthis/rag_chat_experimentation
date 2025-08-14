@@ -302,7 +302,13 @@ class RAGChat {
             );
 
             // Show response with metadata and chunks
-            const metadata = `Mode: ${result.mode.replace('_', ' ')} • ${result.relevant_chunks_count > 0 ? `${result.relevant_chunks_count} chunks retrieved • ` : ''}Context: ${result.context_tokens_used.toLocaleString()} tokens`;
+            let metadata = `Mode: ${result.mode.replace('_', ' ')} • ${result.relevant_chunks_count > 0 ? `${result.relevant_chunks_count} chunks retrieved • ` : ''}Context: ${result.context_tokens_used.toLocaleString()} tokens`;
+            
+            // Add enhanced query info if available
+            if (result.enhanced_query && result.enhanced_query !== message) {
+                metadata += ` • Enhanced query: "${result.enhanced_query}"`;
+            }
+            
             this.showMessage(result.response, 'assistant', false, metadata, result.relevant_chunks, result.mode);
             
             // Update progress bar with new context metrics

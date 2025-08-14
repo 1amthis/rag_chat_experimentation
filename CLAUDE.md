@@ -81,6 +81,12 @@ This is a RAG (Retrieval-Augmented Generation) experimentation system that autom
 - **RAG Mode**: Documents ≥10k tokens use vector search with chunk retrieval
 - Threshold configurable in `rag_service.py` (`token_threshold: 10000`)
 
+### Enhanced Query Rewriting
+- **Multi-turn Conversations**: In RAG mode, queries are enhanced with conversation context
+- **Query Enhancement**: Uses GPT-4o-mini to rewrite queries for better retrieval
+- **Context Integration**: Expands pronouns, adds relevant context from conversation history
+- **Visibility**: Enhanced queries displayed in frontend when different from original
+
 ### API Integration
 - **LLM**: OpenAI GPT-4o
 - **Embeddings**: OpenAI text-embedding-3-small
@@ -92,6 +98,8 @@ This is a RAG (Retrieval-Augmented Generation) experimentation system that autom
 - `token_threshold`: 10000 (mode switch point)
 - `max_context_tokens`: 100000 (RAG context limit)
 - `llm_model`: "gpt-4o"
+- `query_enhancement_model`: "gpt-4o-mini" (for query rewriting)
+- `recent_history_limit`: 6 turns (for query enhancement context)
 
 ### Document Processing
 - Supported formats: PDF, DOCX, TXT

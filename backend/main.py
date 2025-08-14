@@ -51,6 +51,7 @@ class ChatResponse(BaseModel):
     relevant_chunks: List[ChunkInfo]
     context_tokens_used: int
     context_metrics: ContextMetrics
+    enhanced_query: Optional[str] = None  # The query actually used for retrieval
 
 class DocumentInfo(BaseModel):
     id: str
@@ -157,7 +158,8 @@ async def chat(request: ChatRequest):
             relevant_chunks_count=result["relevant_chunks_count"],
             relevant_chunks=result["relevant_chunks"],
             context_tokens_used=result["context_tokens_used"],
-            context_metrics=result["context_metrics"]
+            context_metrics=result["context_metrics"],
+            enhanced_query=result.get("enhanced_query")
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

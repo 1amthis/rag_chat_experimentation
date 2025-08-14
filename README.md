@@ -7,8 +7,10 @@ A web-based chat interface that demonstrates the difference between full-context
 - **Intelligent Context Switching**: Automatically switches between full-context mode (<10k tokens) and RAG mode (≥10k tokens)
 - **Document Upload**: Supports PDF, DOCX, and TXT files with drag-and-drop interface
 - **Real-time Chat**: Interactive chat interface with conversation history
+- **Enhanced Query Rewriting**: Multi-turn conversations use context-aware query enhancement for better retrieval
 - **Vector Search**: Uses FAISS with OpenAI embeddings for semantic document retrieval
 - **Token Tracking**: Real-time monitoring of document tokens and system mode
+- **Query Visibility**: See the actual enhanced queries used for retrieval
 
 ## Architecture
 
@@ -56,9 +58,10 @@ The application will be available at:
 1. **Upload Documents**: Drag and drop or click to upload PDF, DOCX, or TXT files
 2. **Monitor Mode**: Watch the status bar to see current mode (Full Context vs RAG)
 3. **Chat**: Ask questions about your uploaded documents
-4. **Context Switching**: 
+4. **Multi-turn Conversations**: In RAG mode, follow-up questions benefit from enhanced query rewriting
+5. **Context Switching**: 
    - **Full Context Mode**: Documents <10k tokens are passed entirely to the LLM
-   - **RAG Mode**: Documents ≥10k tokens use vector search to retrieve relevant chunks
+   - **RAG Mode**: Documents ≥10k tokens use vector search to retrieve relevant chunks with enhanced queries
 
 ## API Endpoints
 
@@ -99,9 +102,11 @@ rag_experimentation/
 ### RAG Mode (≥10k tokens)
 - Documents are chunked into smaller segments
 - Chunks are embedded using OpenAI text-embedding-3-small
-- User queries are embedded and matched against document chunks
+- **Query Enhancement**: User queries are enhanced with conversation context using GPT-4o-mini
+- Enhanced queries are embedded and matched against document chunks
 - Most relevant chunks are retrieved and passed to the LLM
 - Maximum context capacity: 100k tokens
+- Enhanced queries visible in chat interface when different from original
 
 ## Configuration
 
@@ -109,7 +114,9 @@ Key parameters can be modified in `backend/services/rag_service.py`:
 
 - `token_threshold`: 10000 (switch point between modes)
 - `max_context_tokens`: 100000 (maximum RAG context size)
-- `llm_model`: "gpt-4o" (OpenAI model)
+- `llm_model`: "gpt-4o" (OpenAI model for responses)
+- Query enhancement model: "gpt-4o-mini" (for query rewriting)
+- `recent_history_limit`: 6 turns (conversation context for query enhancement)
 - Embedding model: "text-embedding-3-small"
 
 ## Troubleshooting
